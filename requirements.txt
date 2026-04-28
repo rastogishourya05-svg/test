@@ -1,4 +1,5 @@
 streamlit
+plotly
 langchain
 langchain-core
 langchain-community
@@ -11,3 +12,6 @@ pydantic
 python-dotenv
 httpx
 arxiv
+requests
+pandas
+numpy
