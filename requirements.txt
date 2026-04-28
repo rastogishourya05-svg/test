@@ -1,123 +1,13 @@
-# ============================================================================
-# Core Framework
-# ============================================================================
-langgraph>=0.2.0
-langchain>=0.3.0
-langchain-anthropic>=0.2.0
-langchain-core>=0.3.0
-langchain-community>=0.3.0
-
-# ============================================================================
-# LLM Providers
-# ============================================================================
-anthropic>=0.35.0       # optional, only if you re-add Claude
-openai>=1.0.0            # optional
-groq>=0.9.0              # Groq SDK
-langchain-groq>=0.2.0   # LangChain Groq integration
-
-# ============================================================================
-# Web Framework & API
-# ============================================================================
-fastapi>=0.115.0
-uvicorn[standard]>=0.30.0
-websockets>=12.0
-pydantic>=2.9.0
-python-multipart>=0.0.9
-
-# ============================================================================
-# Vector Database & Embeddings
-# ============================================================================
-chromadb>=0.5.0
-pinecone-client>=5.0.0  # Optional: alternative to ChromaDB
-sentence-transformers>=3.0.0
-faiss-cpu>=1.8.0
-
-# ============================================================================
-# Scientific Literature APIs
-# ============================================================================
-arxiv>=2.1.0
-biopython>=1.84          # PubMed / Entrez API
-semanticscholar>=0.8.0   # Semantic Scholar API
-crossrefapi>=1.5.0       # CrossRef DOI resolution
-requests>=2.32.0
-httpx>=0.27.0
-aiohttp>=3.10.0
-
-# ============================================================================
-# Document Processing & RAG
-# ============================================================================
-pypdf>=4.0.0
-pymupdf>=1.24.0           # Fast PDF parsing (fitz)
-unstructured>=0.15.0      # Multi-format document loading
-tiktoken>=0.7.0           # Token counting
-langchain-text-splitters>=0.3.0
-
-# ============================================================================
-# Data Analysis & Statistics
-# ============================================================================
-numpy>=1.26.0
-pandas>=2.2.0
-scipy>=1.13.0
-scikit-learn>=1.5.0
-matplotlib>=3.9.0
-seaborn>=0.13.0
-plotly>=5.22.0
-
-# ============================================================================
-# State Management & Caching
-# ============================================================================
-redis>=5.0.0
-sqlalchemy>=2.0.0
-alembic>=1.13.0           # DB migrations
-aioredis>=2.0.0
-diskcache>=5.6.0          # Local fallback cache
-
-# ============================================================================
-# Task Queue & Concurrency
-# ============================================================================
-celery>=5.4.0
-kombu>=5.3.0
-asyncio>=3.4.3
-
-# ============================================================================
-# Report Generation
-# ============================================================================
-reportlab>=4.2.0          # PDF generation
-markdown>=3.6.0
-jinja2>=3.1.0             # Template engine
-weasyprint>=62.0          # HTML → PDF
-python-docx>=1.1.0        # Word document export
-
-# ============================================================================
-# Observability & Logging
-# ============================================================================
-langsmith>=0.1.0          # LangChain tracing
-loguru>=0.7.0
-prometheus-client>=0.20.0
-opentelemetry-sdk>=1.25.0
-opentelemetry-exporter-otlp>=1.25.0
-
-# ============================================================================
-# Security & Auth
-# ============================================================================
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
-python-dotenv>=1.0.0
-
-# ============================================================================
-# Testing
-# ============================================================================
-pytest>=8.0.0
-pytest-asyncio>=0.23.0
-pytest-cov>=5.0.0
-httpx>=0.27.0             # Async test client
-faker>=26.0.0             # Mock data generation
-
-# ============================================================================
-# Dev Tools
-# ============================================================================
-black>=24.0.0
-isort>=5.13.0
-mypy>=1.10.0
-ruff>=0.4.0
-pre-commit>=3.7.0
+streamlit
+langchain
+langchain-core
+langchain-community
+langchain-groq
+langgraph
+groq
+fastapi
+uvicorn
+pydantic
+python-dotenv
+httpx
+arxiv
