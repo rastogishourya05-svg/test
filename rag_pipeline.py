@@ -1,0 +1,1 @@
+"""RAG Pipeline placeholder — see full version in outputs"""; print("ok")

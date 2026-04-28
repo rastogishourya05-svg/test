@@ -1,0 +1,178 @@
+# =============================================================================
+# docker-compose.yml — Autonomous Scientific Research Assistant
+# Full stack: API + Streamlit + Redis + ChromaDB + Celery worker
+# =============================================================================
+
+version: "3.9"
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # FastAPI Backend
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: research_api
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8200
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+    volumes:
+      - ./:/app
+      - paper_cache:/app/paper_cache
+    depends_on:
+      redis:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - research_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Streamlit Frontend
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: research_frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://api:8000
+      - WS_BASE_URL=ws://api:8000
+    volumes:
+      - ./:/app
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - research_net
+
+  # ---------------------------------------------------------------------------
+  # Redis — Session state, task queue, caching
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: research_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    networks:
+      - research_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # ChromaDB — Vector store for RAG embeddings
+  # ---------------------------------------------------------------------------
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: research_chroma
+    ports:
+      - "8200:8200"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER=chromadb.auth.token.TokenConfigServerAuthCredentialsProvider
+      - CHROMA_SERVER_AUTH_TOKEN_TRANSPORT_HEADER=AUTHORIZATION
+      - CHROMA_AUTH_TOKEN_TRANSPORT_HEADER=AUTHORIZATION
+    restart: unless-stopped
+    networks:
+      - research_net
+
+  # ---------------------------------------------------------------------------
+  # Celery Worker — Async task execution for long-running pipelines
+  # ---------------------------------------------------------------------------
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: research_worker
+    command: celery -A tasks worker --loglevel=info --concurrency=4 --queues=research,embedding,report
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8200
+    volumes:
+      - ./:/app
+      - paper_cache:/app/paper_cache
+    depends_on:
+      - redis
+      - chroma
+    restart: unless-stopped
+    networks:
+      - research_net
+
+  # ---------------------------------------------------------------------------
+  # Celery Flower — Task monitoring dashboard
+  # ---------------------------------------------------------------------------
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: research_flower
+    command: celery -A tasks flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - worker
+    restart: unless-stopped
+    networks:
+      - research_net
+
+  # ---------------------------------------------------------------------------
+  # Nginx — Reverse proxy
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: research_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+      - frontend
+    restart: unless-stopped
+    networks:
+      - research_net
+
+# =============================================================================
+# Volumes & Networks
+# =============================================================================
+
+volumes:
+  redis_data:
+  chroma_data:
+  paper_cache:
+
+networks:
+  research_net:
+    driver: bridge
