@@ -67,7 +67,7 @@ class ResearchState(TypedDict):
 
 # Primary model: llama-3.3-70b — best quality on Groq free tier
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
+    model="openai/gpt-oss-120b",
     temperature=0.7,
     max_tokens=4000,
     # Reads GROQ_API_KEY from .env automatically
